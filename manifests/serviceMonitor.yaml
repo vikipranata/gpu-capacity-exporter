@@ -2,8 +2,10 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: gpu-capacity-exporter
+  namespace: gpu-capacity-exporter
   labels:
     app: gpu-capacity-exporter
+    release: prometheus
 spec:
   selector:
     matchLabels:

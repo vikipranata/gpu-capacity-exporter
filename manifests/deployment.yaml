@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gpu-capacity-exporter
+  namespace: gpu-capacity-exporter
   labels:
     app: gpu-capacity-exporter
 spec:
@@ -15,10 +16,6 @@ spec:
         app: gpu-capacity-exporter
     spec:
       serviceAccountName: gpu-capacity-exporter
-      nodeName: ngpu01mon01
-      tolerations:
-        - effect: NoSchedule
-          operator: Exists
       containers:
       - name: gpu-capacity-exporter
         image: vikipranata/gpu-capacity-exporter:0.1.0

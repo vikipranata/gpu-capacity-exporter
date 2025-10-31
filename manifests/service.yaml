@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: gpu-capacity-exporter
+  namespace: gpu-capacity-exporter
   labels:
     app: gpu-capacity-exporter
 spec:
