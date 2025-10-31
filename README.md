@@ -13,24 +13,22 @@ Collects GPU capacity, reserved, free metrics from Kubernetes nodes and KubeVirt
 
 ---
 
----
-
 ## Node Labels
 Add the following labels to GPU nodes:
 
-### Example NVIDIA node
+### Example GPU NVIDIA node
 ```
 kubectl label node node01 gpu-type=NVIDIA-H200-SXM
 kubectl label node node01 gpu-capacity=8
 ```
 
-### Example AMD node
+### Example GPU AMD node
 ```
 kubectl label node node02 gpu-type=AMD-INSTINCT-MI300X
 kubectl label node node02 gpu-capacity=8
 ```
 
-### Example INTEL node
+### Example GPU INTEL node
 ```
 kubectl label node node03 gpu-type=INTEL-DCGPU-MAX1550
 kubectl label node node03 gpu-capacity=8
@@ -73,12 +71,13 @@ kubevirt_gpu_free{gpu_type="INTEL-DCGPU-MAX1550",node="node03"} 8.0
 ---
 
 ## Running the Exporter
-Build the image or run it as a Pod:
+### Kubernetes deploy
 
-```
-python3 gpu_capacity_exporter.py
+```sh
+kubectl apply -f manifests/rbac.yaml
+kubectl apply -f manifests/service.yaml
+kubectl apply -f manifests/deployment.yaml
+kubectl apply -f manifests/serviceMonitor.yaml
 ```
 
 Expose port 9100 to Prometheus.
-
----
