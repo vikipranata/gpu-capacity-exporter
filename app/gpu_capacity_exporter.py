@@ -57,8 +57,8 @@ class MetricsHandler(BaseHTTPRequestHandler):
 <body>
     <h1>GPU Capacity Exporter</h1>
     <p>This exporter provides GPU capacity metrics for supporting Kubevirt VM.</p>
-    <p><a href="/metrics">View Metrics</a></p>
     <p>Metrics are updated every 10 seconds.</p>
+    <p><a href="/metrics">View Metrics</a></p>
 </body>
 </html>
 '''
