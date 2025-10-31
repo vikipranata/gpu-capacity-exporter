@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gpu-capacity-exporter
+  labels:
+    app: gpu-capacity-exporter
+spec:
+  selector:
+    app: gpu-capacity-exporter
+  ports:
+  - name: metrics
+    port: 9100
+    targetPort: 9100
+    protocol: TCP
+  type: ClusterIP
