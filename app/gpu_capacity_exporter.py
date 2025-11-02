@@ -82,14 +82,22 @@ def fetch():
     for node in nodes.items:
         labels = node.metadata.labels or {}
 
-        if "gpu-type" not in labels or "gpu-capacity" not in labels:
+        gpu_type = None
+        capacity = 0
+        
+        # Iterate through labels to find GPU capacity labels
+        for label_key, label_value in labels.items():
+            # Check if label follows pattern vendor.com/*=number
+            if (label_key.startswith("nvidia.com/") or
+                label_key.startswith("amd.com/") or
+                label_key.startswith("intel.com/")) and label_value.isdigit():
+                gpu_type = label_key
+                capacity = int(label_value)
+                break
+                
+        # Skip node if no GPU capacity label found
+        if gpu_type is None:
             continue
-
-        gpu_type = labels["gpu-type"]
-        try:
-            capacity = int(labels["gpu-capacity"])
-        except:
-            capacity = 0
 
         node_gpu_info[node.metadata.name] = {
             "gpu_type": gpu_type,
@@ -179,9 +187,17 @@ def fetch():
     # -------- 4. FREE GPU --------
     free = {}
     for node, info in node_gpu_info.items():
-        free_gpu = max(info["capacity"] - reserved[node], 0)
+        # Get node labels to check for gpu-workload=false
+        node_obj = next((n for n in nodes.items if n.metadata.name == node), None)
+        labels = node_obj.metadata.labels if node_obj else {}
+        
+        # If gpu-workload=false, set free_gpu to 0
+        if labels.get("gpu-workload") == "false":
+            free_gpu = 0
+        else:
+            free_gpu = max(info["capacity"] - reserved[node], 0)
+            
         free[node] = free_gpu
-
         gpu_free.labels(node=node, gpu_type=info["gpu_type"]).set(free_gpu)
 
 def main():
