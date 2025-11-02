@@ -15,7 +15,7 @@ Collects GPU capacity, reserved, free metrics from Kubernetes nodes and KubeVirt
 
 ## Node Labels
 Add the following labels to GPU nodes:
-> when nodes label with `gpu-workload=false` it will return kubevirt_gpu_free value to 0.0
+> When a node is labeled with `gpu-workload=false`, it will be returned as `0.0`.
 
 ### Example GPU NVIDIA node
 ```
