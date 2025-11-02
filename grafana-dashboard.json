@@ -110,14 +110,14 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": true,
-          "expr": "gpu:total_cluster",
+          "expr": "kubevirt_gpu_total_cluster_capacity",
           "format": "time_series",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "Total Cluster Capacity",
+          "legendFormat": "{{gpu_type}}",
           "range": true,
           "refId": "A",
           "useBackend": false
@@ -197,7 +197,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": true,
-          "expr": "gpu:used_per_node{node!=\"\"}",
+          "expr": "kubevirt_gpu_reserved{node!=\"\"}",
           "format": "time_series",
           "fullMetaSearch": false,
           "hide": false,
@@ -283,7 +283,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "gpu:total_per_node{node!=\"\"}",
+          "expr": "kubevirt_gpu_capacity{node!=\"\"}",
           "format": "time_series",
           "fullMetaSearch": false,
           "hide": false,
@@ -370,7 +370,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": true,
-          "expr": "gpu:available_per_node{node!=\"\"}",
+          "expr": "kubevirt_gpu_free{node!=\"\"}",
           "format": "time_series",
           "fullMetaSearch": false,
           "hide": false,
@@ -385,6 +385,130 @@
       ],
       "title": "GPU Available per Node",
       "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 100,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.1.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "disableTextWrap": false,
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "kubevirt_gpu_instance{node!=\"\", instance!=\"\"}",
+          "format": "time_series",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "{{node}} - {{gpu_type}} - {{instance}}",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        }
+      ],
+      "title": "Listed VMs",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true,
+              "__name__": true,
+              "instance": false
+            },
+            "indexByName": {},
+            "renameByName": {
+              "address": "IP Address",
+              "gpu_type": "GPU Type",
+              "instance": "VM Instance",
+              "namespace": "Namespace",
+              "node": "Node"
+            }
+          }
+        }
+      ],
+      "type": "table"
     }
   ],
   "preload": false,
@@ -417,5 +541,5 @@
   "timezone": "",
   "title": "GPU Capacity Dashboard",
   "uid": "gpu-capacity-dashboard",
-  "version": 6
+  "version": 8
 }

@@ -59,7 +59,14 @@ kubevirt_gpu_reserved{gpu_type="amd.com/INSTINCT-MI300X",node="node02"} 2.0
 kubevirt_gpu_reserved{gpu_type="intel.com/DCGPU-MAX1550",node="node03"} 1.0
 ```
 
-### 4. GPU Free Usage
+### 4. GPU Used by KubeVirt VMI
+```
+kubevirt_gpu_instance{gpu_type="nvidia.com/NVIDIA-H200-SXM",node="node01"namespace="production",instance="vm-gpu01",address="10.244.2.88"} 4.0
+kubevirt_gpu_instance{gpu_type="amd.com/INSTINCT-MI300X",node="node02",namespace="development",instance="vm-gpu02",address="10.244.2.99"} 2.0
+kubevirt_gpu_instance{gpu_type="intel.com/DCGPU-MAX1550",node="node03",namespace="testing",instance="vm-gpu03",address="10.244.2.66"} 1.0
+```
+
+### 5. GPU Free Usage
 ```
 kubevirt_gpu_free{gpu_type="nvidia.com/NVIDIA-H200-SXM",node="node01"} 8.0
 kubevirt_gpu_free{gpu_type="amd.com/INSTINCT-MI300X",node="node02"} 8.0

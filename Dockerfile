@@ -1,16 +1,16 @@
 FROM python:3.9-slim
 
-WORKDIR /app
+WORKDIR /src
 
 # Install dependencies
-COPY ./requirements.txt /app/requirements.txt
+COPY ./requirements.txt /src/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application
-COPY ./app /app/app
+COPY ./app /src/app
 
 # Expose port
 EXPOSE 9100
 
 # Run the application
-CMD ["python", "./app/gpu_capacity_exporter.py"]
+CMD ["python", "/src/app/gpu_capacity_exporter.py"]

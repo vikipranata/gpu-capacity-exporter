@@ -18,7 +18,7 @@ spec:
       serviceAccountName: gpu-capacity-exporter
       containers:
       - name: gpu-capacity-exporter
-        image: vikipranata/gpu-capacity-exporter:1.0.0
+        image: vikipranata/gpu-capacity-exporter:1.1.0
         imagePullPolicy: Always
         ports:
         - containerPort: 9100

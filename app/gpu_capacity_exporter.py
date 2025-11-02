@@ -29,9 +29,19 @@ gpu_free = Gauge(
     ['node', 'gpu_type']
 )
 
+gpu_instance = Gauge(
+    'kubevirt_gpu_instance',
+    'GPU instances per node per GPU type per VMI instance',
+    ['node', 'gpu_type', 'instance', 'namespace', 'address']
+)
+
 # Track previously seen label combinations to handle removal when configs change
 previous_node_gpu_info = {}
+previous_vmi_gpu_instances = {}
 
+# GPU device mapping function
+# Maps GPU type (from node label) to device name (in VMI spec)
+# Default implementation assumes they are the same
 GPU_DEVICE_MAP = lambda gpu_type: gpu_type
 
 class MetricsHandler(BaseHTTPRequestHandler):
@@ -69,7 +79,7 @@ class MetricsHandler(BaseHTTPRequestHandler):
             self.wfile.write(b'Not Found')
 
 def fetch():
-    global previous_node_gpu_info
+    global previous_node_gpu_info, previous_vmi_gpu_instances
     
     v1 = client.CoreV1Api()
     virt = client.CustomObjectsApi()
@@ -160,6 +170,7 @@ def fetch():
     )
 
     reserved = {node: 0 for node in node_gpu_info}
+    vmi_gpu_instances = {}  # Track GPU instances per VMI
 
     for vmi in vmis["items"]:
         nodeName = vmi.get("status", {}).get("nodeName")
@@ -175,14 +186,58 @@ def fetch():
 
         gpu_type = node_gpu_info[nodeName]["gpu_type"]
         expected_device = GPU_DEVICE_MAP(gpu_type)
+        vmi_name = vmi.get("metadata", {}).get("name", "unknown")
+        namespace = vmi.get("metadata", {}).get("namespace", "unknown")
+        address = vmi.get("status", {}).get("interfaces", [{}])[0].get("ipAddress", "unknown")
 
         # count hostDevices that match gpu_type
         count = sum(1 for d in devices if d.get("deviceName") == expected_device)
         reserved[nodeName] += count
+        
+        # Track GPU instances for this VMI
+        if nodeName not in vmi_gpu_instances:
+            vmi_gpu_instances[nodeName] = {}
+        if gpu_type not in vmi_gpu_instances[nodeName]:
+            vmi_gpu_instances[nodeName][gpu_type] = {}
+        vmi_gpu_instances[nodeName][gpu_type][vmi_name] = {
+            "count": count,
+            "namespace": namespace,
+            "address": address
+        }
 
     for node, count in reserved.items():
         gpu_type = node_gpu_info[node]["gpu_type"]
         gpu_reserved.labels(node=node, gpu_type=gpu_type).set(count)
+    
+    # -------- REMOVE STALE GPU INSTANCE METRICS --------
+    # Remove metrics for VMIs that no longer exist or have changed
+    for node_name, prev_gpu_types in previous_vmi_gpu_instances.items():
+        for gpu_type, prev_vmis in prev_gpu_types.items():
+            for vmi_name in prev_vmis:
+                # If VMI no longer exists or has changed, remove old metrics
+                if (node_name not in vmi_gpu_instances or
+                    gpu_type not in vmi_gpu_instances[node_name] or
+                    vmi_name not in vmi_gpu_instances[node_name][gpu_type]):
+                    try:
+                        gpu_instance.remove(node_name, gpu_type, vmi_name)
+                    except KeyError:
+                        # Label combination didn't exist, ignore
+                        pass
+    
+    # -------- PUBLISH GPU INSTANCE METRICS --------
+    for node_name, gpu_types in vmi_gpu_instances.items():
+        for gpu_type, vmi_instances in gpu_types.items():
+            for vmi_name, vmi_info in vmi_instances.items():
+                gpu_instance.labels(
+                    node=node_name,
+                    gpu_type=gpu_type,
+                    instance=vmi_name,
+                    namespace=vmi_info["namespace"],
+                    address=vmi_info["address"]
+                ).set(vmi_info["count"])
+    
+    # Update previous_vmi_gpu_instances for next iteration
+    previous_vmi_gpu_instances = vmi_gpu_instances
 
     # -------- 4. FREE GPU --------
     free = {}
